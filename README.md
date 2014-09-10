@@ -1,90 +1,52 @@
-# Active Admin
+# Active Admin Confirmable
 
-Active Admin is a Ruby on Rails framework for creating elegant backends for website administration.
+Fork to add Devise confirmable support to ActiveAdmin. This allows you to create admin users without a password, which they set themselves. After creating an admin record, they will recieve an email with a confirmation URL in which they enter their own password.
 
-[![Version  ](http://img.shields.io/gem/v/activeadmin.svg)                         ](https://rubygems.org/gems/activeadmin)
-[![Travis CI](http://img.shields.io/travis/activeadmin/activeadmin/master.svg)     ](https://travis-ci.org/activeadmin/activeadmin)
-[![Quality  ](http://img.shields.io/codeclimate/github/activeadmin/activeadmin.svg)](https://codeclimate.com/github/activeadmin/activeadmin)
-[![Coverage ](http://img.shields.io/coveralls/activeadmin/activeadmin.svg)         ](https://coveralls.io/r/activeadmin/activeadmin)
-[![Gittip   ](http://img.shields.io/gittip/activeadmin.svg)                        ](https://gittip.com/activeadmin)
-[![Inch CI  ](http://inch-ci.org/github/activeadmin/activeadmin.svg?branch=master) ](http://inch-ci.org/github/activeadmin/activeadmin)
+## Instructions
+You'll need to add a couple of helper methods to your admin user model, which in most cases will be app/models/admin_user.rb
 
-## State of the project
-
-### 1.0.0
-
-We're [currently working on 1.0.0](https://github.com/activeadmin/activeadmin/issues?milestone=18),
-which as far as dependencies, moves us from meta_search to Ransack and adds Rails 4 support.
-You can get Rails 4 and 4.1 support by tracking master:
+### Gemfile
+(Replace activeadmin if it already exists)
 
 ```ruby
-gem 'activeadmin', github: 'activeadmin'
+gem 'activeadmin', git: 'https://github.com/logistik-digital/activeadmin.git', branch: 'add-admin-password-self-selection'
 ```
 
-### 0.6.x
-
-The plan is to follow [semantic versioning](http://semver.org/) as of 1.0.0. The 0.6.x line will
-still be maintained, and we will backport bug fixes into future 0.6.x releases. If you don't want
-to have to wait for a release, you can track the branch instead:
+### Admin user model
+In our case admin_user.rb
 
 ```ruby
-gem 'activeadmin', github: 'activeadmin', branch: '0-6-stable'
+class AdminUser < ActiveRecord::Base
+  # Include default devise modules. Others available are:
+  # :token_authenticatable, :confirmable,
+  # :lockable, :timeoutable and :omniauthable
+  devise :database_authenticatable, :confirmable,
+         :recoverable, :rememberable, :trackable, :validatable
+
+  def password_required?
+    super if confirmed?
+  end
+
+  def password_match?
+    self.errors[:password] << "can't be blank" if password.blank?
+    self.errors[:password_confirmation] << "can't be blank" if password_confirmation.blank?
+    self.errors[:password_confirmation] << "does not match password" if password != password_confirmation
+    password == password_confirmation && !password.blank?
+  end
+
+  def attempt_set_password(params)
+    p = {}
+    p[:password] = params[:password]
+    p[:password_confirmation] = params[:password_confirmation]
+    update_attributes(p)
+  end
+
+  def has_no_password?
+    self.encrypted_password.blank?
+  end
+
+  def only_if_unconfirmed
+    pending_any_confirmation {yield}
+  end
+end
 ```
-
-## Documentation
-
-Please note that <http://activeadmin.info> is out of date. For the latest docs, check out the
-Github [docs folder](https://github.com/activeadmin/activeadmin/tree/master/docs) and the [wiki](https://github.com/activeadmin/activeadmin/wiki).
-
-## Links
-
-* Website: <http://www.activeadmin.info>
-* Live demo: <http://demo.activeadmin.info/admin>
-* Documentation
-  * Guides: <http://activeadmin.info/documentation.html>
-  * YARD: <http://rubydoc.info/gems/activeadmin/frames>
-  * Wiki: <https://github.com/activeadmin/activeadmin/wiki>
-
-## Goals
-
-1. Enable developers to quickly create good-looking administration interfaces.
-2. Build a DSL for developers and an interface for businesses.
-3. Ensure that developers can easily customize every nook and cranny.
-
-## Getting started
-
-Check out [the docs](https://github.com/activeadmin/activeadmin/blob/master/docs/0-installation.md)!
-
-## Need help?
-
-Ask us in IRC ([#activeadmin](https://webchat.freenode.net/?channels=activeadmin)), on the
-[mailing list](http://groups.google.com/group/activeadmin), or on
-[Stack Overflow](http://stackoverflow.com/questions/tagged/activeadmin).
-
-## Want to contribute?
-
-The [contributing guide](https://github.com/activeadmin/activeadmin/blob/master/CONTRIBUTING.md)
-is a good place to start. If you have questions, feel free to ask
-[@seanlinsley](https://twitter.com/seanlinsley).
-
-## Dependencies
-
-We try not to reinvent the wheel, so Active Admin is built with other open source projects:
-
-Tool                  | Description
---------------------- | -----------
-[Arbre]               | Ruby -> HTML, just like that.
-[Devise]              | Powerful, extensible user authentication
-[Formtastic]          | A Rails form builder plugin with semantically rich and accessible markup
-[Iconic Icons]        | An excellent SVG icon set designed by P.J. Onori
-[Inherited Resources] | Simplifies controllers with pre-built RESTful controller actions
-[Kaminari]            | Elegant pagination for any sort of collection
-[Ransack]             | Provides a simple search API to query your data
-
-[Arbre]: https://github.com/activeadmin/arbre
-[Devise]: https://github.com/plataformatec/devise
-[Formtastic]: https://github.com/justinfrench/formtastic
-[Iconic Icons]: http://somerandomdude.com/projects/iconic
-[Inherited Resources]: https://github.com/josevalim/inherited_resources
-[Kaminari]: https://github.com/amatsuda/kaminari
-[Ransack]: https://github.com/activerecord-hackery/ransack

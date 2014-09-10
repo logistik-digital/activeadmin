@@ -1,0 +1,16 @@
+<div class="contentWrapper">
+  <div id="login">
+  <%= content_tag :h2, 'Set password' %>
+  <%= active_admin_form_for(resource, :as => resource_name, :url => confirmation_path(resource_name), :html => {:method => 'put'}) do |f|
+    f.inputs do
+      f.input :password, label: "Choose a Password:"
+      f.input :password_confirmation, label: "Password Confirmation:"
+    end
+    f.inputs do
+      hidden_field_tag :confirmation_token, @confirmation_token
+    end
+    f.actions do
+      f.action :submit, :label => "Set password", :button_html => { :value => "Set password" }
+    end
+  end %>
+</div>

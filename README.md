@@ -9,6 +9,36 @@ We'll be rebasing this gem 'every so often', when we require new features or sec
 ## Instructions
 You'll need to add a couple of helper methods to your admin user model, which in most cases will be app/models/admin_user.rb
 
+### Devise
+
+See [the Devise wiki entry](https://github.com/plataformatec/devise/wiki/How-To:-Override-confirmations-so-users-can-pick-their-own-passwords-as-part-of-confirmation-activation) for more thorough detail on what's needed. We are using :admin_users (AdminUser) for the admin user model.
+
+Add confirmable fields to database:
+
+```ruby
+class AddAdminUserConfirmable < ActiveRecord::Migration
+  def self.up
+    add_column :admin_users, :confirmation_token, :string
+    add_column :admin_users, :confirmed_at, :datetime
+    add_column :admin_users, :confirmation_sent_at, :datetime
+    # add_column :admin_users, :unconfirmed_email, :string # Only if using reconfirmable
+    add_index :admin_users, :confirmation_token, :unique => true
+
+    AdminUser.update_all({:confirmed_at => DateTime.now, :confirmation_sent_at => DateTime.now})
+  end
+
+  def self.down
+    remove_column :admin_users, [:confirmed_at, :confirmation_token, :confirmation_sent_at]
+  end
+end
+```
+
+Set reconfirmable in config/intializers/devise.rb:
+
+```ruby
+config.reconfirmable = false
+```
+
 ### Gemfile
 Replace activeadmin if it already exists
 

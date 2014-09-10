@@ -109,6 +109,9 @@ en:
       resend_confirmation_instructions:
         title: "Resend confirmation instructions"
         submit: "Resend confirmation instructions"
+      set_password:
+        title: "Set your password"
+        submit: "Set password"
       links:
         sign_in: "Sign in"
         forgot_your_password: "Forgot your password?"

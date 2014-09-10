@@ -2,6 +2,13 @@
 
 Fork to add Devise confirmable support to ActiveAdmin. This allows you to create admin users without a password, which they set themselves. After creating an admin record, they will recieve an email with a confirmation URL in which they enter their own password.
 
+## Requirements
+
+Only tested on:
+
+* Devise 3.3.0
+* Warden 1.2.3
+
 ## Updates
 
 We'll be rebasing this gem 'every so often', when we require new features or security updates to ActiveAdmin. Please feel free to fork and rebase this yourself if required. Instructions for this are at the bottom of the [contrubuting guide.](https://github.com/logistik-digital/activeadmin/blob/add-admin-password-self-selection/CONTRIBUTING.md)

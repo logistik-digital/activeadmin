@@ -2,14 +2,30 @@
 
 Fork to add Devise confirmable support to ActiveAdmin. This allows you to create admin users without a password, which they set themselves. After creating an admin record, they will recieve an email with a confirmation URL in which they enter their own password.
 
+## Updates
+
+We'll be rebasing this gem 'every so often', when we require new features or security updates to ActiveAdmin. Please feel free to fork and rebase this yourself if required. Instructions for this are at the bottom of the [contrubuting guide.](https://github.com/logistik-digital/activeadmin/blob/add-admin-password-self-selection/CONTRIBUTING.md)
+
 ## Instructions
 You'll need to add a couple of helper methods to your admin user model, which in most cases will be app/models/admin_user.rb
 
 ### Gemfile
-(Replace activeadmin if it already exists)
+Replace activeadmin if it already exists
 
 ```ruby
 gem 'activeadmin', git: 'https://github.com/logistik-digital/activeadmin.git', branch: 'add-admin-password-self-selection'
+```
+
+### Routes
+A route will need to be added to allow a PUT to the confirmations controller.
+```ruby
+  # ActiveAdmin Confirmable Routes
+  # Using admin user model set in ActiveAdmin initializers
+  admin_current_user_method = ActiveAdmin.application.current_user_method
+  admin_user_model = Object.const_get(admin_current_user_method.to_s.sub("current_","").classify)
+  devise_scope admin_user_model.name.underscore.to_sym do
+    put "/admin/confirmation" => "active_admin/devise/confirmations#update"
+  end
 ```
 
 ### Admin user model
